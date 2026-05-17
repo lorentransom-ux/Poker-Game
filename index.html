@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title data-id="th-modified">🃏 Poker Night</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #1a5c2a;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* ── SETUP SCREEN ───────────────────────────────── */
+    #setup {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: radial-gradient(ellipse at center, #2d7a3f 0%, #1a3d21 100%);
+    }
+    .setup-title {
+      font-size: clamp(2rem, 8vw, 3rem);
+      color: #f0c14b;
+      text-shadow: 2px 3px 6px rgba(0,0,0,0.6);
+      margin-bottom: 8px; text-align: center;
+    }
+    .setup-subtitle {
+      color: #b8d4a8; font-size: 1rem; margin-bottom: 28px; text-align: center; letter-spacing: 1px;
+    }
+    .setup-card {
+      background: rgba(0,0,0,0.45);
+      border: 2px solid #8B6914;
+      border-radius: 16px;
+      padding: 22px 24px;
+      width: 100%; max-width: 420px;
+      margin-bottom: 18px;
+    }
+    .setup-card h3 {
+      color: #f0c14b; font-size: 1.05rem; margin: 0 0 14px 0; letter-spacing: 1px;
+    }
+    .player-name-input {
+      width: 100%; padding: 10px 14px;
+      font-size: 1.1rem; font-family: inherit;
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid #6b8c5a;
+      border-radius: 8px; color: #f0e6c8;
+      outline: none; transition: border-color 0.2s;
+    }
+    .player-name-input:focus { border-color: #f0c14b; }
+    .player-name-input::placeholder { color: #7a9468; }
+    .chips-label { color: #b8d4a8; font-size: 0.85rem; margin: 14px 0 8px; }
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip-setup {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .chip-circle-sm {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: bold;
+      border: 3px solid; box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .chip-count-input {
+      width: 42px; padding: 4px 2px; text-align: center;
+      font-size: 0.9rem; font-family: inherit;
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid #6b8c5a; border-radius: 6px;
+      color: #f0e6c8; outline: none;
+    }
+    .chip-val-label { color: #a0b890; font-size: 0.7rem; }
+    .start-btn {
+      display: block; width: 100%; max-width: 420px;
+      padding: 16px; font-size: 1.3rem; font-family: inherit;
+      background: linear-gradient(135deg, #b8860b, #f0c14b, #b8860b);
+      color: #1a1a0a; font-weight: bold;
+      border: none; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 1px;
+    }
+    .start-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+    /* ── GAME SCREEN ────────────────────────────────── */
+    #game {
+      display: none; flex-direction: column;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at center, #267b38 0%, #174a21 100%);
+      padding: 8px;
+      gap: 8px;
+    }
+
+    /* felt texture overlay */
+    #game::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: repeating-linear-gradient(
+        45deg, transparent, transparent 2px,
+        rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+      );
+    }
+
+    #player0-panel {
+      transform: rotate(180deg);
+    }
+
+    .game-header {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 6px;
+      margin-top: 4px;
+    }
+    .game-title {
+      font-size: clamp(1.1rem, 4vw, 1.6rem);
+      color: #f0c14b;
+      text-shadow: 1px 2px 4px rgba(0,0,0,0.5);
+    }
+    .header-btns { display: flex; gap: 6px; }
+    .icon-btn {
+      background: rgba(0,0,0,0.35); border: 1.5px solid #6b8c5a;
+      color: #b8d4a8; border-radius: 8px; padding: 6px 10px;
+      font-size: 0.8rem; cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .icon-btn:active { background: rgba(255,255,255,0.1); }
+
+    /* Player panels */
+    .player-panel {
+      position: relative; z-index: 1;
+      background: rgba(0,0,0,0.38);
+      border: 2px solid #5a7a4a;
+      border-radius: 14px;
+      padding: 12px 14px;
+      flex: 1;
+    }
+    .player-panel.active-better {
+      border-color: #f0c14b;
+      box-shadow: 0 0 14px rgba(240,193,75,0.35);
+    }
+    .player-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .player-name {
+      font-size: clamp(1rem, 4vw, 1.35rem);
+      color: #f0e6c8; font-weight: bold;
+    }
+    .player-total {
+      font-size: clamp(0.85rem, 3vw, 1.1rem);
+      color: #f0c14b;
+      background: rgba(0,0,0,0.3);
+      padding: 3px 10px; border-radius: 20px;
+      border: 1px solid #8B6914;
+    }
+    .chips-grid {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;
+    }
+    .chip-btn-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .chip-btn {
+      width: clamp(52px, 12vw, 68px);
+      height: clamp(52px, 12vw, 68px);
+      border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: inherit; font-weight: bold;
+      border: 4px solid; cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: transform 0.12s, box-shadow 0.12s;
+      position: relative; overflow: visible;
+      outline: none;
+      line-height: 1;
+    }
+    .chip-btn:active { transform: scale(0.9); box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+    .chip-btn.empty { opacity: 0.35; cursor: not-allowed; }
+    .chip-btn .chip-value { font-size: 0.62rem; letter-spacing: 0.5px; }
+    .chip-btn .chip-count { font-size: 1.05rem; }
+    .chip-denom { color: #9ab88a; font-size: 0.65rem; }
+
+    /* POT section */
+    .pot-panel {
+      position: relative; z-index: 1;
+      background: rgba(0,0,0,0.5);
+      border: 2.5px solid #8B6914;
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .pot-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .pot-label {
+      font-size: clamp(0.8rem, 3vw, 1rem);
+      color: #f0c14b; letter-spacing: 2px; text-transform: uppercase;
+    }
+    .pot-suits {
+      color: rgba(240,193,75,0.4); font-size: 1rem; letter-spacing: 4px;
+    }
+    .pot-total {
+      font-size: clamp(1.4rem, 6vw, 2rem);
+      color: #f0c14b;
+      text-shadow: 0 0 12px rgba(240,193,75,0.4);
+      font-weight: bold;
+      text-align: center; margin-bottom: 10px;
+    }
+    .pot-chips {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+      min-height: 40px; margin-bottom: 12px;
+    }
+    .pot-chip-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .pot-chip-circle {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 1rem;
+      border: 3px solid;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .pot-chip-count { font-size: 0.7rem; color: #9ab88a; }
+    .pot-empty-msg { color: #4a6a3a; font-size: 0.9rem; text-align: center; padding: 6px 0; }
+    .win-btns { display: flex; gap: 10px; }
+    .win-btn {
+      flex: 1; padding: 12px 8px;
+      font-size: clamp(0.75rem, 2.8vw, 1rem);
+      font-family: inherit; font-weight: bold;
+      border: none; border-radius: 10px; cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      letter-spacing: 0.5px;
+    }
+    .win-btn:active { transform: scale(0.96); }
+    .win-btn-0 {
+      background: linear-gradient(135deg, #1a6b8a, #2196F3);
+      color: white;
+    }
+    .win-btn-1 {
+      background: linear-gradient(135deg, #8a2be2, #c84fc8);
+      color: white;
+    }
+    .win-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Toast notification */
+    #toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.8); color: #f0e6c8;
+      padding: 10px 22px; border-radius: 30px;
+      font-size: 0.95rem; z-index: 999; pointer-events: none;
+      opacity: 0; transition: opacity 0.3s;
+      border: 1px solid #5a7a4a; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+
+    /* Win modal */
+    #win-modal {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.75);
+      align-items: center; justify-content: center;
+    }
+    .win-modal-box {
+      background: radial-gradient(ellipse, #2d7a3f, #1a3d21);
+      border: 3px solid #f0c14b;
+      border-radius: 20px;
+      padding: 36px 40px;
+      text-align: center;
+      max-width: 320px; width: 90%;
+      box-shadow: 0 0 40px rgba(240,193,75,0.3);
+    }
+    .win-trophy { font-size: 4rem; margin-bottom: 8px; }
+    .win-title { font-size: 1.8rem; color: #f0c14b; margin-bottom: 6px; font-weight: bold; }
+    .win-subtitle { color: #b8d4a8; font-size: 1rem; margin-bottom: 24px; }
+    .win-modal-btn {
+      background: linear-gradient(135deg, #b8860b, #f0c14b, #b8860b);
+      color: #1a1a0a; border: none;
+      padding: 12px 32px; border-radius: 10px;
+      font-size: 1.1rem; font-family: inherit; font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* All-In button */
+    .allin-btn {
+      width: 100%; margin-top: 10px;
+      padding: 10px 8px;
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      font-family: inherit; font-weight: bold;
+      background: linear-gradient(135deg, #b22200, #ff4500, #b22200);
+      color: #fff;
+      border: none; border-radius: 10px; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+      letter-spacing: 1px;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .allin-btn:active { transform: scale(0.96); }
+    .allin-btn:disabled { opacity: 0.35; cursor: not-allowed; background: #555; }
+
+    /* Game Over modal */
+    #gameover-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
+    }
+    .gameover-modal-box {
+      background: radial-gradient(ellipse, #2d1a3f, #0e0a1a);
+      border: 3px solid #f0c14b;
+      border-radius: 20px;
+      padding: 36px 32px;
+      text-align: center;
+      max-width: 340px; width: 92%;
+      box-shadow: 0 0 50px rgba(240,193,75,0.4);
+    }
+    .gameover-trophy { font-size: 4.5rem; margin-bottom: 8px; }
+    .gameover-title { font-size: 1.1rem; color: #b8d4a8; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+    .gameover-winner { font-size: 2rem; color: #f0c14b; font-weight: bold; margin-bottom: 4px; }
+    .gameover-subtitle { color: #b8d4a8; font-size: 1rem; margin-bottom: 24px; }
+    .gameover-btns { display: flex; flex-direction: column; gap: 10px; }
+    .gameover-btn-primary {
+      background: linear-gradient(135deg, #b8860b, #f0c14b, #b8860b);
+      color: #1a1a0a; border: none;
+      padding: 13px 24px; border-radius: 10px;
+      font-size: 1.05rem; font-family: inherit; font-weight: bold;
+      cursor: pointer; letter-spacing: 0.5px;
+    }
+    .gameover-btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #b8d4a8; border: 1.5px solid #5a7a4a;
+      padding: 11px 24px; border-radius: 10px;
+      font-size: 0.95rem; font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* Responsive tweaks */
+    @media (min-width: 600px) {
+      #game { max-width: 560px; margin: 0 auto; padding: 12px; gap: 10px; }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .chip-btn { width: 48px; height: 48px; }
+      .pot-total { font-size: 1.3rem; }
+    }
+  </style>
+<meta property="og:title" content="🃏 Poker Night" data-id="th-modified" ><meta name="description" content="Poker Table" data-id="th-modified" ><meta property="og:description" content="Poker Table" data-id="th-modified" ><meta property="og:image" content="https://tiiny.host/assets/logo-purple-bg.png" data-id="th-modified" ><meta property="og:url" content="https://pokertable.tiiny.site/" data-id="th-modified" ><meta property="og:type" content="website" data-id="th-modified" ><script defer data-domain="pokertable.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script></head>
+<body>
+
+<!-- ══ SETUP SCREEN ══════════════════════════════════════════════ -->
+<div id="setup">
+  <div class="setup-title">🃏 Poker Night</div>
+  <div class="setup-subtitle">♠ ♥ ♦ ♣</div>
+
+  <div id="player-setup-cards"></div>
+
+  <div class="setup-card" style="max-width:420px; width:100%;">
+    <h3>🪙 Starting Chips (each player)</h3>
+    <div class="chip-row" id="chip-setup-row"></div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Deal 'Em! 🃏</button>
+</div>
+
+<!-- ══ GAME SCREEN ══════════════════════════════════════════════ -->
+<div id="game">
+  <div id="player0-panel" class="player-panel"></div>
+  <div id="pot-panel" class="pot-panel"></div>
+  <div id="player1-panel" class="player-panel"></div>
+
+  <div class="game-header">
+    <span class="game-title">🃏 Poker Night</span>
+    <div class="header-btns">
+      <button class="icon-btn" onclick="undoAction()">↩ Undo</button>
+      <button class="icon-btn" onclick="newHand()">🔄 New Hand</button>
+      <button class="icon-btn" onclick="goSetup()" title="Reset">⚙</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<!-- ══ GAME OVER MODAL ════════════════════════════════════════════ -->
+<div id="gameover-modal">
+  <div class="gameover-modal-box">
+    <div class="gameover-trophy">🏆</div>
+    <div class="gameover-title">Game Over</div>
+    <div class="gameover-winner" id="gameover-name">—</div>
+    <div class="gameover-subtitle" id="gameover-subtitle">wins the game!</div>
+    <div class="gameover-btns">
+      <button class="gameover-btn-primary" onclick="resetSamePlayers()">🔄 New Game, Same Players</button>
+      <button class="gameover-btn-secondary" onclick="goSetup(); closeGameOverModal()">⚙ Change Players / Setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WIN MODAL ══════════════════════════════════════════════════ -->
+<div id="win-modal">
+  <div class="win-modal-box">
+    <div class="win-trophy">🏆</div>
+    <div class="win-title" id="win-name">—</div>
+    <div class="win-subtitle" id="win-amount">wins the pot!</div>
+    <button class="win-modal-btn" onclick="closeWinModal()">Next Hand! 🃏</button>
+  </div>
+</div>
+
+<script>
+  // ─── Chip Definitions ────────────────────────────────────────────
+  const CHIPS = [
+    { id: 'white', label: '$5',  value: 5,   bgColor: '#F0F0F0', textColor: '#555',  borderColor: '#C0C0C0', shadow: '#999' },
+    { id: 'red',   label: '$10', value: 10,  bgColor: '#CC2222', textColor: '#FFF',  borderColor: '#8B0000', shadow: '#500' },
+    { id: 'blue',  label: '$25', value: 25,  bgColor: '#1155CC', textColor: '#FFF',  borderColor: '#003399', shadow: '#001' },
+    { id: 'green', label: '$50', value: 50,  bgColor: '#1a7a1a', textColor: '#FFF',  borderColor: '#005500', shadow: '#002' },
+    { id: 'black', label: '$100',value: 100, bgColor: '#222',    textColor: '#EEE',  borderColor: '#000',    shadow: '#000' },
+  ];
+
+  // ─── State ───────────────────────────────────────────────────────
+  let state = {
+    players: [
+      { name: 'Dad',  chips: {} },
+      { name: 'Son',  chips: {} },
+    ],
+    pot: {},
+    history: [],   // stack of {players, pot} snapshots for undo
+  };
+
+  // Default starting chips
+  let startingChips = { white: 4, red: 4, blue: 4, green: 2, black: 2 };
+
+  // ─── Helpers ─────────────────────────────────────────────────────
+  function chipKeys() { return CHIPS.map(c => c.id); }
+
+  function emptyChips() {
+    const obj = {};
+    CHIPS.forEach(c => obj[c.id] = 0);
+    return obj;
+  }
+
+  function chipValue(chips) {
+    return CHIPS.reduce((sum, c) => sum + (chips[c.id] || 0) * c.value, 0);
+  }
+
+  function fmt(n) { return '$' + n.toLocaleString(); }
+
+  function potIsEmpty() {
+    return CHIPS.every(c => (state.pot[c.id] || 0) === 0);
+  }
+
+  function cloneState() {
+    return {
+      players: state.players.map(p => ({ name: p.name, chips: { ...p.chips } })),
+      pot: { ...state.pot }
+    };
+  }
+
+  function pushHistory() {
+    state.history.push(cloneState());
+    if (state.history.length > 30) state.history.shift();
+  }
+
+  function showToast(msg, duration = 1600) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // ─── Setup Screen ────────────────────────────────────────────────
+  function initSetup() {
+    // Player name cards
+    const pCards = document.getElementById('player-setup-cards');
+    pCards.innerHTML = '';
+    state.players.forEach((p, i) => {
+      pCards.innerHTML += `
+        <div class="setup-card" style="max-width:420px; width:100%;">
+          <h3>Player ${i+1} Name</h3>
+          <input class="player-name-input" id="pname${i}"
+            value="${p.name}" placeholder="Enter name" maxlength="14">
+        </div>`;
+    });
+
+    // Chip count inputs
+    const row = document.getElementById('chip-setup-row');
+    row.innerHTML = '';
+    CHIPS.forEach(c => {
+      row.innerHTML += `
+        <div class="chip-setup">
+          <div class="chip-circle-sm"
+            style="background:${c.bgColor}; color:${c.textColor}; border-color:${c.borderColor}">
+            ${c.label}
+          </div>
+          <input class="chip-count-input" id="sc_${c.id}"
+            type="number" min="0" max="99"
+            value="${startingChips[c.id] || 0}">
+          <span class="chip-val-label">${c.label}</span>
+        </div>`;
+    });
+  }
+
+  function startGame() {
+    // Read player names
+    state.players.forEach((p, i) => {
+      const inp = document.getElementById(`pname${i}`);
+      if (inp && inp.value.trim()) p.name = inp.value.trim();
+    });
+
+    // Read starting chip counts
+    CHIPS.forEach(c => {
+      const inp = document.getElementById(`sc_${c.id}`);
+      startingChips[c.id] = parseInt(inp?.value || 0) || 0;
+    });
+
+    // Give chips to both players
+    state.players.forEach(p => {
+      p.chips = { ...startingChips };
+    });
+    state.pot = emptyChips();
+    state.history = [];
+
+    document.getElementById('setup').style.display = 'none';
+    const g = document.getElementById('game');
+    g.style.display = 'flex';
+    renderGame();
+  }
+
+  function goSetup() {
+    document.getElementById('game').style.display = 'none';
+    document.getElementById('setup').style.display = 'flex';
+    initSetup();
+  }
+
+  // ─── Game Rendering ──────────────────────────────────────────────
+  function renderGame() {
+    renderPlayer(0);
+    renderPlayer(1);
+    renderPot();
+  }
+
+  function renderPlayer(idx) {
+    const p = state.players[idx];
+    const panel = document.getElementById(`player${idx}-panel`);
+    const total = chipValue(p.chips);
+
+    let chipsHtml = '';
+    CHIPS.forEach(c => {
+      const count = p.chips[c.id] || 0;
+      const empty = count === 0 ? ' empty' : '';
+      chipsHtml += `
+        <div class="chip-btn-wrap">
+          <button class="chip-btn${empty}"
+            style="background:${c.bgColor}; color:${c.textColor}; border-color:${c.borderColor};
+                   box-shadow:0 4px 0 ${c.shadow},0 2px 8px rgba(0,0,0,0.5)"
+            onclick="betChip(${idx},'${c.id}')"
+            title="Bet 1 ${c.label} chip"
+            ${count === 0 ? 'disabled' : ''}>
+            <span class="chip-count">${count}</span>
+            <span class="chip-value">${c.label}</span>
+          </button>
+          <span class="chip-denom">${c.label}</span>
+        </div>`;
+    });
+
+    const broke = total === 0;
+    panel.innerHTML = `
+      <div class="player-header">
+        <div class="player-name">${escHtml(p.name)}</div>
+        <div class="player-total">${fmt(total)}</div>
+      </div>
+      <div class="chips-grid">${chipsHtml}</div>
+      <button class="allin-btn" onclick="allIn(${idx})" ${broke ? 'disabled' : ''}>
+        🔥 ALL IN${broke ? ' (No chips)' : ' — ' + fmt(total)}
+      </button>`;
+  }
+
+  function renderPot() {
+    const pot = state.pot;
+    const total = chipValue(pot);
+    const empty = potIsEmpty();
+
+    let chipHtml = '';
+    if (empty) {
+      chipHtml = '<div class="pot-empty-msg">♦ Pot is empty ♦</div>';
+    } else {
+      CHIPS.forEach(c => {
+        const count = pot[c.id] || 0;
+        if (count === 0) return;
+        chipHtml += `
+          <div class="pot-chip-item">
+            <div class="pot-chip-circle"
+              style="background:${c.bgColor}; color:${c.textColor}; border-color:${c.borderColor}">
+              ${count}
+            </div>
+            <span class="pot-chip-count">${c.label}</span>
+          </div>`;
+      });
+    }
+
+    const winBtns = state.players.map((p, i) => {
+      const colors = [
+        'background:linear-gradient(135deg,#1a6b8a,#2196F3)',
+        'background:linear-gradient(135deg,#7b1fa2,#c84fc8)'
+      ];
+      return `<button class="win-btn" style="${colors[i]}"
+        onclick="winPot(${i})" ${empty ? 'disabled' : ''}>
+        🏆 ${escHtml(p.name)} Wins!
+      </button>`;
+    }).join('');
+
+    document.getElementById('pot-panel').innerHTML = `
+      <div class="pot-header">
+        <span class="pot-label">🃏 The Pot</span>
+        <span class="pot-suits">♠ ♥ ♦ ♣</span>
+      </div>
+      <div class="pot-total">${empty ? '—' : fmt(total)}</div>
+      <div class="pot-chips">${chipHtml}</div>
+      <div class="win-btns">${winBtns}</div>`;
+  }
+
+  // ─── Game Actions ────────────────────────────────────────────────
+  function betChip(playerIdx, chipId) {
+    const p = state.players[playerIdx];
+    if ((p.chips[chipId] || 0) === 0) return;
+    pushHistory();
+    p.chips[chipId]--;
+    state.pot[chipId] = (state.pot[chipId] || 0) + 1;
+    renderGame();
+    checkElimination();
+  }
+
+  function allIn(playerIdx) {
+    const p = state.players[playerIdx];
+    if (chipValue(p.chips) === 0) return;
+    pushHistory();
+    CHIPS.forEach(c => {
+      state.pot[c.id] = (state.pot[c.id] || 0) + (p.chips[c.id] || 0);
+      p.chips[c.id] = 0;
+    });
+    renderGame();
+    showToast(`${p.name} is ALL IN! 🔥`, 2000);
+    checkElimination();
+  }
+
+  function winPot(playerIdx) {
+    if (potIsEmpty()) return;
+    pushHistory();
+    const p = state.players[playerIdx];
+    const potVal = chipValue(state.pot);
+    CHIPS.forEach(c => {
+      p.chips[c.id] = (p.chips[c.id] || 0) + (state.pot[c.id] || 0);
+    });
+    state.pot = emptyChips();
+    renderGame();
+    showWinModal(p.name, potVal);
+    checkElimination();
+  }
+
+  function checkElimination() {
+    const broke = state.players.filter(p => chipValue(p.chips) === 0);
+    if (broke.length === 1 && potIsEmpty()) {
+      const winner = state.players.find(p => chipValue(p.chips) > 0);
+      showGameOverModal(winner.name, chipValue(winner.chips));
+    }
+  }
+
+  function undoAction() {
+    if (state.history.length === 0) {
+      showToast('Nothing to undo!');
+      return;
+    }
+    const prev = state.history.pop();
+    state.players = prev.players;
+    state.pot = prev.pot;
+    renderGame();
+    showToast('↩ Undone!');
+  }
+
+  function newHand() {
+    if (potIsEmpty()) {
+      showToast('Pot is already empty — start betting!');
+      return;
+    }
+    // Return pot chips proportionally? No — just clear with toast warning
+    if (!confirm('Return all pot chips to players equally? (Split the pot)')) return;
+    pushHistory();
+    // Split pot as evenly as possible — give remainder to player 0
+    CHIPS.forEach(c => {
+      const total = state.pot[c.id] || 0;
+      const half = Math.floor(total / 2);
+      state.players[0].chips[c.id] = (state.players[0].chips[c.id] || 0) + (total - half);
+      state.players[1].chips[c.id] = (state.players[1].chips[c.id] || 0) + half;
+      state.pot[c.id] = 0;
+    });
+    renderGame();
+    showToast('🔄 Pot split! Ready for next hand.');
+  }
+
+  // ─── Game Over Modal ─────────────────────────────────────────────
+  function showGameOverModal(name, total) {
+    document.getElementById('gameover-name').textContent = name;
+    document.getElementById('gameover-subtitle').textContent = `wins the game with ${fmt(total)}! 🎉`;
+    document.getElementById('gameover-modal').style.display = 'flex';
+  }
+
+  function closeGameOverModal() {
+    document.getElementById('gameover-modal').style.display = 'none';
+  }
+
+  function resetSamePlayers() {
+    closeGameOverModal();
+    state.players.forEach(p => {
+      p.chips = { ...startingChips };
+    });
+    state.pot = emptyChips();
+    state.history = [];
+    renderGame();
+    showToast('🔄 Fresh stacks! New game begins.', 2200);
+  }
+
+  // ─── Win Modal ───────────────────────────────────────────────────
+  function showWinModal(name, amount) {
+    document.getElementById('win-name').textContent = `${name} Wins!`;
+    document.getElementById('win-amount').textContent = `🏆 Took the pot — ${fmt(amount)}!`;
+    const modal = document.getElementById('win-modal');
+    modal.style.display = 'flex';
+  }
+
+  function closeWinModal() {
+    document.getElementById('win-modal').style.display = 'none';
+  }
+
+  // ─── Util ────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── Init ────────────────────────────────────────────────────────
+  initSetup();
+</script>
+</body>
+</html>
