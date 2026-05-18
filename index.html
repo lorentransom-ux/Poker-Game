@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title data-id="th-modified">🃏 Poker Night</title>
+  <link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="🃏 Poker Night" data-id="th-modified" ><meta name="description" content="Poker Table" data-id="th-modified" ><meta property="og:description" content="Poker Table" data-id="th-modified" ><meta property="og:image" content="https://tiiny.host/assets/logo-purple-bg.png" data-id="th-modified" ><meta property="og:url" content="https://pokertable.tiiny.site/" data-id="th-modified" ><meta property="og:type" content="website" data-id="th-modified" ><script defer data-domain="pokertable.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script></head>
+<body>
+
+<!-- ══ SETUP SCREEN ══════════════════════════════════════════════ -->
+<div id="setup">
+  <div class="setup-title">🃏 Poker Night</div>
+  <div class="setup-subtitle">♠ ♥ ♦ ♣</div>
+
+  <div id="player-setup-cards"></div>
+
+  <div class="setup-card" style="max-width:420px; width:100%;">
+    <h3>🪙 Starting Chips (each player)</h3>
+    <div class="chip-row" id="chip-setup-row"></div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Deal 'Em! 🃏</button>
+</div>
+
+<!-- ══ GAME SCREEN ══════════════════════════════════════════════ -->
+<div id="game">
+  <div id="player0-panel" class="player-panel"></div>
+  <div id="pot-panel" class="pot-panel"></div>
+  <div id="player1-panel" class="player-panel"></div>
+
+  <div class="game-header">
+    <span class="game-title">🃏 Poker Night</span>
+    <div class="header-btns">
+      <button class="icon-btn" onclick="undoAction()">↩ Undo</button>
+      <button class="icon-btn" onclick="newHand()">🔄 New Hand</button>
+      <button class="icon-btn" onclick="goSetup()" title="Reset">⚙</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<!-- ══ GAME OVER MODAL ════════════════════════════════════════════ -->
+<div id="gameover-modal">
+  <div class="gameover-modal-box">
+    <div class="gameover-trophy">🏆</div>
+    <div class="gameover-title">Game Over</div>
+    <div class="gameover-winner" id="gameover-name">—</div>
+    <div class="gameover-subtitle" id="gameover-subtitle">wins the game!</div>
+    <div class="gameover-btns">
+      <button class="gameover-btn-primary" onclick="resetSamePlayers()">🔄 New Game, Same Players</button>
+      <button class="gameover-btn-secondary" onclick="goSetup(); closeGameOverModal()">⚙ Change Players / Setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WIN MODAL ══════════════════════════════════════════════════ -->
+<div id="win-modal">
+  <div class="win-modal-box">
+    <div class="win-trophy">🏆</div>
+    <div class="win-title" id="win-name">—</div>
+    <div class="win-subtitle" id="win-amount">wins the pot!</div>
+    <button class="win-modal-btn" onclick="closeWinModal()">Next Hand! 🃏</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
