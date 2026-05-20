@@ -25,14 +25,12 @@
 
 <!-- ══ GAME SCREEN ══════════════════════════════════════════════ -->
 <div id="game">
-  <div id="game-main">
-    <div id="player0-panel" class="player-panel"></div>
-    <div id="pot-panel" class="pot-panel"></div>
-    <div id="player1-panel" class="player-panel"></div>
-  </div>
-  <div class="game-sidebar">
-    <span class="sidebar-title">🃏 Poker Night</span>
-    <div class="sidebar-btns">
+  <div id="player0-panel" class="player-panel"></div>
+  <div id="pot-panel" class="pot-panel"></div>
+  <div id="player1-panel" class="player-panel"></div>
+  <div class="game-footer">
+    <span class="footer-title">🃏 Poker Night</span>
+    <div class="footer-btns">
       <button class="icon-btn" onclick="undoAction()">Undo</button>
       <button class="icon-btn" onclick="newHand()">New Hand</button>
       <button class="icon-btn" onclick="goSetup()">⚙</button>
@@ -42,20 +40,7 @@
 
 <!-- ══ TOAST ══════════════════════════════════════════════════════ -->
 <div id="toast"></div>
-
-<!-- ══ GAME OVER MODAL ════════════════════════════════════════════ -->
-<div id="gameover-modal">
-  <div class="gameover-modal-box">
-    <div class="gameover-trophy">🏆</div>
-    <div class="gameover-title">Game Over</div>
-    <div class="gameover-winner" id="gameover-name">—</div>
-    <div class="gameover-subtitle" id="gameover-subtitle">wins the game!</div>
-    <div class="gameover-btns">
-      <button class="gameover-btn-primary" onclick="resetSamePlayers()">🔄 New Game, Same Players</button>
-      <button class="gameover-btn-secondary" onclick="goSetup(); closeGameOverModal()">⚙ Change Players / Setup</button>
-    </div>
-  </div>
-</div>
+<div id="toast-top"></div>
 
 <!-- ══ WIN MODAL ══════════════════════════════════════════════════ -->
 <div id="win-modal">
@@ -63,7 +48,9 @@
     <div class="win-trophy">🏆</div>
     <div class="win-title" id="win-name">—</div>
     <div class="win-subtitle" id="win-amount">wins the pot!</div>
-    <button class="win-modal-btn" onclick="closeWinModal()">Next Hand! 🃏</button>
+    <div class="win-modal-btns" id="win-modal-btns">
+      <button class="win-modal-btn" onclick="closeWinModal()">Next Hand! 🃏</button>
+    </div>
   </div>
 </div>
 

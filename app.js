@@ -52,11 +52,12 @@ function pushHistory() {
 }
 
 function showToast(msg, duration = 1600) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), duration);
+  [document.getElementById('toast'), document.getElementById('toast-top')].forEach(el => {
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove('show'), duration);
+  });
 }
 
 // ─── Setup Screen ────────────────────────────────────────────────
@@ -224,7 +225,6 @@ function betChip(playerIdx, chipId) {
   p.chips[chipId]--;
   state.pot[chipId] = (state.pot[chipId] || 0) + 1;
   renderGame();
-  checkElimination();
 }
 
 function allIn(playerIdx) {
@@ -237,7 +237,6 @@ function allIn(playerIdx) {
   });
   renderGame();
   showToast(`${p.name} is ALL IN! 🔥`, 2000);
-  checkElimination();
 }
 
 function winPot(playerIdx) {
@@ -250,16 +249,13 @@ function winPot(playerIdx) {
   });
   state.pot = emptyChips();
   renderGame();
-  showWinModal(p.name, potVal);
-  checkElimination();
+  const isGameOver = checkElimination();
+  showWinModal(p.name, potVal, isGameOver);
 }
 
 function checkElimination() {
   const broke = state.players.filter(p => chipValue(p.chips) === 0);
-  if (broke.length === 1 && potIsEmpty()) {
-    const winner = state.players.find(p => chipValue(p.chips) > 0);
-    showGameOverModal(winner.name, chipValue(winner.chips));
-  }
+  return broke.length === 1 && potIsEmpty();
 }
 
 function undoAction() {
@@ -293,38 +289,36 @@ function newHand() {
   showToast('🔄 Pot split! Ready for next hand.');
 }
 
-// ─── Game Over Modal ─────────────────────────────────────────────
-function showGameOverModal(name, total) {
-  document.getElementById('gameover-name').textContent = name;
-  document.getElementById('gameover-subtitle').textContent = `wins the game with ${fmt(total)}! 🎉`;
-  document.getElementById('gameover-modal').style.display = 'flex';
+// ─── Win Modal ───────────────────────────────────────────────────
+function showWinModal(name, amount, isGameOver = false) {
+  document.getElementById('win-name').textContent = `${name} Wins!`;
+  document.getElementById('win-amount').textContent = isGameOver
+    ? `🏆 Wins the game with ${fmt(amount)}! 🎉`
+    : `🏆 Took the pot — ${fmt(amount)}!`;
+  const btnsEl = document.getElementById('win-modal-btns');
+  if (isGameOver) {
+    btnsEl.innerHTML = `
+      <button class="win-modal-btn" onclick="resetSamePlayers()">New Game</button>
+      <button class="win-modal-btn win-modal-btn-secondary" onclick="goSetup(); closeWinModal()">Home</button>`;
+  } else {
+    btnsEl.innerHTML = `<button class="win-modal-btn" onclick="closeWinModal()">Next Hand! 🃏</button>`;
+  }
+  document.getElementById('win-modal').style.display = 'flex';
 }
 
-function closeGameOverModal() {
-  document.getElementById('gameover-modal').style.display = 'none';
+function closeWinModal() {
+  document.getElementById('win-modal').style.display = 'none';
 }
 
 function resetSamePlayers() {
-  closeGameOverModal();
+  closeWinModal();
   state.players.forEach(p => {
     p.chips = { ...startingChips };
   });
   state.pot = emptyChips();
   state.history = [];
   renderGame();
-  showToast('🔄 Fresh stacks! New game begins.', 2200);
-}
-
-// ─── Win Modal ───────────────────────────────────────────────────
-function showWinModal(name, amount) {
-  document.getElementById('win-name').textContent = `${name} Wins!`;
-  document.getElementById('win-amount').textContent = `🏆 Took the pot — ${fmt(amount)}!`;
-  const modal = document.getElementById('win-modal');
-  modal.style.display = 'flex';
-}
-
-function closeWinModal() {
-  document.getElementById('win-modal').style.display = 'none';
+  showToast('Fresh stacks! New game begins.', 2200);
 }
 
 // ─── Util ────────────────────────────────────────────────────────
