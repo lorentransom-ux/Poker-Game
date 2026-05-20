@@ -25,16 +25,17 @@
 
 <!-- ══ GAME SCREEN ══════════════════════════════════════════════ -->
 <div id="game">
-  <div id="player0-panel" class="player-panel"></div>
-  <div id="pot-panel" class="pot-panel"></div>
-  <div id="player1-panel" class="player-panel"></div>
-
-  <div class="game-header">
-    <span class="game-title">🃏 Poker Night</span>
-    <div class="header-btns">
-      <button class="icon-btn" onclick="undoAction()">↩ Undo</button>
-      <button class="icon-btn" onclick="newHand()">🔄 New Hand</button>
-      <button class="icon-btn" onclick="goSetup()" title="Reset">⚙</button>
+  <div id="game-main">
+    <div id="player0-panel" class="player-panel"></div>
+    <div id="pot-panel" class="pot-panel"></div>
+    <div id="player1-panel" class="player-panel"></div>
+  </div>
+  <div class="game-sidebar">
+    <span class="sidebar-title">🃏 Poker Night</span>
+    <div class="sidebar-btns">
+      <button class="icon-btn" onclick="undoAction()">Undo</button>
+      <button class="icon-btn" onclick="newHand()">New Hand</button>
+      <button class="icon-btn" onclick="goSetup()">⚙</button>
     </div>
   </div>
 </div>

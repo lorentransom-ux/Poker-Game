@@ -189,25 +189,31 @@ function renderPot() {
     });
   }
 
-  const winBtns = state.players.map((p, i) => {
-    const colors = [
-      'background:linear-gradient(135deg,#1a6b8a,#2196F3)',
-      'background:linear-gradient(135deg,#7b1fa2,#c84fc8)'
-    ];
-    return `<button class="win-btn" style="${colors[i]}"
-      onclick="winPot(${i})" ${empty ? 'disabled' : ''}>
-      🏆 ${escHtml(p.name)} Wins!
-    </button>`;
-  }).join('');
+  const totalDisplay = empty ? '—' : fmt(total);
+  const colors = [
+    'linear-gradient(135deg,#1a6b8a,#2196F3)',
+    'linear-gradient(135deg,#7b1fa2,#c84fc8)'
+  ];
 
   document.getElementById('pot-panel').innerHTML = `
-    <div class="pot-header">
-      <span class="pot-label">🃏 The Pot</span>
-      <span class="pot-suits">♠ ♥ ♦ ♣</span>
+    <div class="pot-half pot-half-top">
+      <button class="win-btn" style="background:${colors[0]}"
+        onclick="winPot(0)" ${empty ? 'disabled' : ''}>
+        🏆 ${escHtml(state.players[0].name)} Wins!
+      </button>
     </div>
-    <div class="pot-total">${empty ? '—' : fmt(total)}</div>
-    <div class="pot-chips">${chipHtml}</div>
-    <div class="win-btns">${winBtns}</div>`;
+    <div class="pot-center-row">
+      <div class="pot-text-col">
+        <span class="pot-text-vertical">Pot  ${totalDisplay}</span>
+      </div>
+      <div class="pot-chips">${chipHtml}</div>
+    </div>
+    <div class="pot-half pot-half-bottom">
+      <button class="win-btn" style="background:${colors[1]}"
+        onclick="winPot(1)" ${empty ? 'disabled' : ''}>
+        🏆 ${escHtml(state.players[1].name)} Wins!
+      </button>
+    </div>`;
 }
 
 // ─── Game Actions ────────────────────────────────────────────────
